@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KumbuFlow | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar - Barra Lateral */
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .sidebar .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: white;
+        }
+        .sidebar .logo span { color: #3b82f6; }
+
+        .menu-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .sidebar a.logout {
+            margin-top: auto;
+            color: #f87171;
+        }
+        .sidebar a.logout:hover {
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header h2 { font-size: 1.8rem; font-weight: 700; }
+        .user-profile { display: flex; align-items: center; gap: 12px; background: #1e293b; padding: 8px 16px; border-radius: 20px; }
+
+        /* Cards de Estatísticas */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        .card .card-icon {
+            position: absolute;
+            right: 24px;
+            top: 24px;
+            font-size: 1.5rem;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .card p { color: #64748b; font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; }
+        .card h3 { font-size: 1.6rem; font-weight: 700; }
+
+        /* Secção de Tabelas/Alertas */
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .section-box {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .section-box h4 { font-size: 1.2rem; margin-bottom: 20px; color: white; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
+        td { color: #e2e8f0; font-size: 0.95rem; }
+
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            color: #fca5a5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">Kumbu<span>Flow</span></div>
+        
+        <div class="menu-label">Navegação</div>
+        <a href="/dashboard" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/vendas"><i class="fas fa-shopping-cart"></i> Vendas (PDV)</a>
+        <a href="/gestao_stock"><i class="fas fa-boxes"></i> Gestão de Stock</a>
+        <a href="/despesas"><i class="fas fa-minus-circle" style="color: #f87171;"></i> Despesas</a>
+        <a href="/dividas"><i class="fas fa-user-clock" style="color: #fbbf24;"></i> Controlo de Dívidas</a>
+        <a href="/fornecedores"><i class="fas fa-truck"></i> Fornecedores</a>
+        
+        {% if session.get('cargo') == 'admin' %}
+        <div class="menu-label" style="margin-top: 20px;">Administração</div>
+        <a href="/auditoria"><i class="fas fa-shield-alt"></i> Auditoria</a>
+        <a href="/admin"><i class="fas fa-users"></i> Gerir Equipa</a>
+        {% endif %}
+        
+        <a href="/logout" class="logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h2>Olá, {{ session.get('nome') }} 👋</h2>
+                <p style="color: #64748b;">Bem-vindo ao painel de controlo do KumbuFlow.</p>
+            </div>
+            <div class="user-profile">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.get('cargo') | upper }}</span>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <p>Faturação Total</p>
+                <h3>{{ faturacao | moeda }}</h3>
+                <div class="card-icon"><i class="fas fa-wallet"></i></div>
+            </div>
+            
+            <div class="card">
+                <p>Faturação Mensal</p>
+                <h3 style="color: #3b82f6;">{{ faturacao_mensal | moeda }}</h3>
+                <div class="card-icon" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1);"><i class="fas fa-calendar-alt"></i></div>
+            </div>
+
+            <div class="card">
+                <p>Total Despesas</p>
+                <h3 style="color: #f87171;">{{ total_despesas | moeda }}</h3>
+                <div class="card-icon" style="color: #f87171; background: rgba(248, 113, 113, 0.1);"><i class="fas fa-minus-circle"></i></div>
+            </div>
+
+            <div class="card">
+                <p>Lucro Estimado</p>
+                <h3 style="color: #10b981;">{{ lucro | moeda }}</h3>
+                <div class="card-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i class="fas fa-chart-line"></i></div>
+            </div>
+            
+            <div class="card">
+                <p>Vendas Realizadas</p>
+                <h3>{{ total_vendas }}</h3>
+                <div class="card-icon" style="color: #a855f7; background: rgba(168, 85, 247, 0.1);"><i class="fas fa-shopping-bag"></i></div>
+            </div>
+        </div>
+
+        <div class="dashboard-sections">
+            <div class="section-box">
+                <h4><i class="fas fa-trophy" style="color: #eab308; margin-right: 8px;"></i> Produtos Mais Vendidos</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd Vendida</th>
+                            <th>Total Faturado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in top_produtos %}
+                        <tr>
+                            <td>{{ prod.nome }}</td>
+                            <td>{{ prod.qtd_vendida }}</td>
+                            <td>{{ prod.total_faturado | moeda }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-box">
+                <h4><i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 8px;"></i> Alertas de Stock</h4>
+                {% for alerta in alertas_stock %}
+                <div class="alert-item">
+                    <span>{{ alerta.nome }}</span>
+                    <strong>{{ alerta.quantidade }} un. restante(s)</strong>
+                </div>
+                {% else %}
+                <p style="color: #64748b; font-size: 0.9rem;">Nenhum produto com stock baixo.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

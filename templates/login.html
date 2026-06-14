@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KumbuFlow | Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e2937 50%, #334155 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Fundo com efeito sutil */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('https://source.unsplash.com/random/1920x1080/?abstract,technology') center/cover;
+            opacity: 0.15;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            z-index: 2;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            max-width: 430px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.09);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            padding: 52px 44px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -2px;
+        }
+
+        .logo span {
+            color: #60a5fa;
+        }
+
+        h2 {
+            text-align: center;
+            color: #e2e8f0;
+            font-size: 1.7rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #cbd5e1;
+            margin-bottom: 42px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 26px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 18px 20px 18px 52px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 14px;
+            color: white;
+            font-size: 1.08rem;
+            transition: all 0.3s;
+        }
+
+        .input-group input::placeholder {
+            color: #94a3b8;
+        }
+
+        .input-group input:focus {
+            border-color: #60a5fa;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.3rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px -8px rgba(59, 130, 246, 0.5);
+        }
+
+        .error {
+            background: rgba(248, 113, 113, 0.2);
+            border: 1px solid #f87171;
+            color: #fda4af;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 26px;
+        }
+
+        .security {
+            text-align: center;
+            margin-top: 32px;
+            color: #94a3b8;
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="logo">
+                <h1>Kumbu<span>Flow</span></h1>
+            </div>
+
+            <h2>Acesso Seguro</h2>
+            <p class="subtitle">Entre na sua conta corporativa</p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="error">
+                        <i class="fas fa-exclamation-circle"></i> {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="username" placeholder="Usuário " required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="senha" placeholder="Senha" required>
+                </div>
+
+                <button type="submit">Entrar na Plataforma</button>
+            </form>
+
+            <div class="security">
+                <i class="fas fa-shield-alt"></i>
+                <span>Conexão criptografada • Proteção 2FA</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

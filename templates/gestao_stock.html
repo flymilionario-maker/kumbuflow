@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KumbuFlow | Gestão de Stock</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { background: #0f172a; color: #f8fafc; display: flex; min-height: 100vh; }
+
+        /* Sidebar - Mantendo o padrão */
+        .sidebar { width: 260px; background: #1e293b; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; padding: 24px; }
+        .sidebar .logo { font-size: 1.8rem; font-weight: 700; margin-bottom: 40px; color: white; }
+        .sidebar .logo span { color: #3b82f6; }
+        .menu-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 12px; font-weight: 600; }
+        .sidebar a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; font-weight: 500; transition: all 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: #3b82f6; color: white; }
+        .sidebar a.logout { margin-top: auto; color: #f87171; }
+        .sidebar a.logout:hover { background: rgba(248, 113, 113, 0.1); }
+
+        /* Conteúdo Principal */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .header { margin-bottom: 32px; }
+        .header h2 { font-size: 1.8rem; font-weight: 700; }
+
+        /* Layout em duas colunas: Formulário à esquerda, Tabela à direita */
+        .stock-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 32px; }
+
+        .box { background: #1e293b; padding: 28px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); height: fit-content; }
+        .box h4 { font-size: 1.2rem; margin-bottom: 24px; color: white; display: flex; align-items: center; gap: 8px; }
+
+        /* Formulários */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px 16px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-size: 0.95rem; transition: all 0.3s; }
+        .form-group input:focus { border-color: #3b82f6; outline: none; }
+
+        button.btn-add { width: 100%; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
+        button.btn-add:hover { background: #2563eb; transform: translateY(-2px); }
+
+        /* Tabelas */
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
+        td { color: #e2e8f0; font-size: 0.95rem; }
+
+        .btn-delete { background: none; border: none; color: #f87171; cursor: pointer; font-size: 1rem; transition: color 0.3s; }
+        .btn-delete:hover { color: #ef4444; }
+
+        /* Mensagens Flash */
+        .flash-msg { padding: 12px 16px; border-radius: 10px; margin-bottom: 24px; font-size: 0.95rem; font-weight: 500; }
+        .flash-success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
+        .flash-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">Kumbu<span>Flow</span></div>
+        <div class="menu-label">Navegação</div>
+        <a href="/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="/vendas"><i class="fas fa-shopping-cart"></i> Vendas (PDV)</a>
+        <a href="/gestao_stock" class="active"><i class="fas fa-boxes"></i> Gestão de Stock</a>
+        <a href="/fornecedores"><i class="fas fa-truck"></i> Fornecedores</a>
+        
+        {% if session.get('cargo') == 'admin' %}
+        <div class="menu-label" style="margin-top: 20px;">Administração</div>
+        <a href="/auditoria"><i class="fas fa-shield-alt"></i> Auditoria</a>
+        <a href="/admin"><i class="fas fa-users"></i> Gerir Equipa</a>
+        {% endif %}
+        <a href="/logout" class="logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2>Gestão de Stock</h2>
+            <p style="color: #64748b;">Controlo total sobre as tuas mercadorias e produtos disponíveis.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="flash-msg flash-{{ category }}"><i class="fas fa-info-circle"></i> {{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="stock-grid">
+            <div class="box">
+                <h4><i class="fas fa-plus-circle" style="color: #3b82f6;"></i> Novo Produto</h4>
+                <form method="POST">
+                    <input type="hidden" name="acao" value="adicionar">
+                    
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" name="nome" placeholder="Ex: Teclado Mecânico" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade Inicial</label>
+                        <input type="number" name="quantidade" placeholder="Ex: 50" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço de Custo (Kz)</label>
+                        <input type="number" step="0.01" name="preco_custo" placeholder="Ex: 4500" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço de Venda (Kz)</label>
+                        <input type="number" step="0.01" name="preco_venda" placeholder="Ex: 7500" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-add">Gravar no Stock</button>
+                </form>
+            </div>
+
+            <div class="box">
+                <h4><i class="fas fa-list" style="color: #a855f7;"></i> Artigos em Stock</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd</th>
+                            <th>P. Custo</th>
+                            <th>P. Venda</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in produtos %}
+                        <tr>
+                            <td><strong>{{ prod.nome }}</strong></td>
+                            <td>
+                                <span style="color: {% if prod.quantidade <= 5 %}#f87171{% else %}#e2e8f0{% endif %};">
+                                    {{ prod.quantidade }} un.
+                                </span>
+                            </td>
+                            <td>{{ prod.preco_custo }} Kz</td>
+                            <td style="color: #34d399; font-weight: 600;">{{ prod.preco_venda }} Kz</td>
+                            <td>
+                                <form method="POST" style="display:inline;" onsubmit="return confirm('Eliminar este produto?');">
+                                    <input type="hidden" name="acao" value="eliminar">
+                                    <input type="hidden" name="produto_id" value="{{ prod.id }}">
+                                    <button type="submit" class="btn-delete"><i class="fas fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #64748b; padding: 30px;">
+                                Nenhum produto registado no momento.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
