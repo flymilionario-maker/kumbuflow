@@ -33,7 +33,17 @@ def query_db(query, args=(), one=False):
     rv = cur.fetchall()
     conn.close()
     return (rv[0] if rv else None) if one else rv
+# Adiciona isto no teu sistema.py, logo após o app = Flask(__name__)
 
+def formatar_moeda(valor):
+    # Isto assume que o valor é um número. 
+    # Ajusta o "Kz" ou o símbolo que quiseres usar.
+    try:
+        return f"Kz {float(valor):,.2f}"
+    except:
+        return f"Kz {valor}"
+
+app.jinja_env.filters['moeda'] = formatar_moeda
 def execute_db(query, args=()):
     """Para INSERT, UPDATE, DELETE (Escrita)"""
     conn, placeholder = get_db_connection()
