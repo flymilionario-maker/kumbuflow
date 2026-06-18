@@ -25,8 +25,8 @@ def get_db_connection():
         conn.cursor_factory = DictCursor
         return conn, '%s'
     else:
-        # Modo Local: SQLite
-        conn = sqlite3.connect('kumbuflow.db')
+        # Modo Local: SQLite (Proteção de timeout adicionada para evitar travamentos)
+        conn = sqlite3.connect('kumbuflow.db', timeout=30)
         conn.row_factory = sqlite3.Row
         return conn, '?'
 
@@ -36,9 +36,13 @@ def query_db(query, args=(), one=False):
     # Converte '?' para '%s' se for Postgres
     query = query.replace('?', placeholder)
     cur = conn.cursor()
-    cur.execute(query, args)
-    rv = cur.fetchall()
-    conn.close()
+    try:
+        cur.execute(query, args)
+        rv = cur.fetchall()
+    finally:
+        # Garante que o cursor e a conexão fecham sempre, mesmo se houver erro
+        cur.close()
+        conn.close()
     return (rv[0] if rv else None) if one else rv
 
 def formatar_moeda(valor):
@@ -54,14 +58,18 @@ def execute_db(query, args=()):
     conn, placeholder = get_db_connection()
     query = query.replace('?', placeholder)
     cur = conn.cursor()
-    cur.execute(query, args)
-    conn.commit()
-    conn.close()
+    try:
+        cur.execute(query, args)
+        conn.commit()
+    finally:
+        # Liberta a base de dados imediatamente após a escrita
+        cur.close()
+        conn.close()
 
 # --- INICIALIZAÇÃO ---
 def iniciar_banco_de_dados():
     if not os.environ.get('DATABASE_URL'):
-        conn = sqlite3.connect('kumbuflow.db')
+        conn = sqlite3.connect('kumbuflow.db', timeout=30)
         cur = conn.cursor()
         
         cur.execute('''CREATE TABLE IF NOT EXISTS produtos (id INTEGER PRIMARY KEY AUTOINCREMENT, usuario_id INTEGER, nome TEXT NOT NULL, quantidade INTEGER NOT NULL, preco_custo REAL, preco_venda REAL)''')
